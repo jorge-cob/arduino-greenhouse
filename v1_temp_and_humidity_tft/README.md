@@ -1,6 +1,6 @@
 # v1_temp_and_humidity_tft
 
-Monitor temperature and humidty and display them in a LCD screen. They will display in green when in range and in red when out of bounds.
+Monitor temperature and humidty and display them in a TFT screen. They will display in green when in range and in red when out of bounds.
 
 
 ## List of Components
