@@ -24,14 +24,16 @@ Adafruit_Sensor *bme_humidity = bme.getHumiditySensor();
 
 ST7789_AVR display = ST7789_AVR(TFT_DC, TFT_RST); // Initialize display
 
+bool inTempRange, inHumidityRange = false;
+float temp = 0;
+int humidity = 0;
+
 void setup()
 {
   Serial.begin(9600);
-  Serial.println(F("Initialiting Screen..."));
   display.init(240, 240); // Init ST7789 240x240
   display.setRotation(2); // Rotate depending on your display positioning
   display.fillScreen(BLACK);
-  Serial.println(F("Initialiting BME280..."));
   if (!bme.begin(0x76))
   {
     Serial.println(F("BME280 not found"));
@@ -42,29 +44,37 @@ void setup()
 
 void loop(void)
 {
-  int humidity = bme.readHumidity();
-  float temperature = bme.readTemperature();
+  int currentHumidity = bme.readHumidity();
+  float currentTemp = bme.readTemperature();
 
-  bool isOverTemp = temperature > maxTemp;
-  bool isUnderTemp = temperature < minTemp;
-  bool isOverHumid = humidity > maxHumid;
-  bool isUnderHumid = humidity < minHumid;
-
-  uint16_t tempColor = isOverTemp || isUnderTemp ? RED : GREEN;
-  uint16_t humidColor = isOverHumid || isUnderHumid ? RED : GREEN;
-
-  display.setCursor(40, 50);
-  display.setTextColor(tempColor, BLACK);
-  display.setTextSize(5);
-  display.print(temperature, 1);
-  display.drawCircle(168, 55, 4, tempColor);
-  display.drawCircle(168, 55, 5, tempColor);
-  display.setCursor(180, 50);
-  display.print("C");
-
-  display.setCursor(80, 140);
-  display.setTextColor(humidColor, BLACK);
-  display.setTextSize(6);
-  display.print(humidity);
-  display.print("%");
+  if (currentTemp != temp)
+  {
+    Serial.println("repaint temp");
+    inTempRange = currentTemp <= maxTemp && currentTemp >= minTemp;
+    uint16_t tempColor = inTempRange ? GREEN : RED;
+    display.setCursor(40, 50);
+    display.setTextColor(tempColor, BLACK);
+    display.setTextSize(5);
+    display.print(currentTemp, 1);
+    display.drawCircle(168, 55, 4, tempColor);
+    display.drawCircle(168, 55, 5, tempColor);
+    display.setCursor(180, 50);
+    display.print("C");
+    temp = currentTemp;
+    Serial.println(temp);
+  }
+  if (currentHumidity != humidity)
+  {
+    inHumidityRange = currentHumidity <= maxHumid && currentTemp >= minHumid;
+    uint16_t humidColor = inHumidityRange ? GREEN : RED;
+    humidity = currentHumidity;
+    display.setCursor(80, 140);
+    display.setTextColor(humidColor, BLACK);
+    display.setTextSize(6);
+    display.print(currentHumidity);
+    display.print("%");
+    humidity = currentHumidity;
+    Serial.println(humidity);
+  }
+  delay(2000);
 }
